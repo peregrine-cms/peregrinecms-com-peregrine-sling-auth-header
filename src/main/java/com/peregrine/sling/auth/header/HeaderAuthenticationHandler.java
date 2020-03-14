@@ -61,7 +61,6 @@ public class HeaderAuthenticationHandler extends DefaultAuthenticationFeedbackHa
                                      javax.servlet.http.HttpServletResponse response,
                                      AuthenticationInfo authInfo)
     {
-        logger.info("authenticationFailed() called: AuthenticationInfo={}", authInfo);
-
+        logger.warn("authenticationFailed() called: AuthenticationInfo={}", authInfo);
     }
 }
