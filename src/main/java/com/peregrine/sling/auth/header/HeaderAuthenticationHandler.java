@@ -13,12 +13,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Component(
-    service = AuthenticationHandler.class,
-    name = "Header Authentication Handler",
-    property = {
-            AuthenticationHandler.PATH_PROPERTY + "=/"
-    },
-    immediate = true
+        service = AuthenticationHandler.class,
+        name = "Header Authentication Handler",
+        property = {
+                AuthenticationHandler.PATH_PROPERTY + "=/"
+        },
+        immediate = true
 )
 public class HeaderAuthenticationHandler extends DefaultAuthenticationFeedbackHandler implements AuthenticationHandler
 {
