@@ -27,7 +27,6 @@ import org.apache.jackrabbit.oak.spi.security.authentication.external.*;
 import org.apache.jackrabbit.oak.spi.whiteboard.Whiteboard;
 import org.apache.jackrabbit.oak.spi.whiteboard.WhiteboardUtils;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.metatype.annotations.Designate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,9 +43,6 @@ import java.util.Set;
         name = "Header Login Module",
         service = HeaderExternalLoginModule.class,
         immediate = true
-)
-@Designate(
-        ocd = HeaderExternalLoginConfig.class
 )
 public class HeaderExternalLoginModule extends AbstractLoginModule
 {
@@ -240,7 +236,7 @@ public class HeaderExternalLoginModule extends AbstractLoginModule
     public boolean abort() throws LoginException
     {
         // TODO:  Do we need to override this method?
-        logger.debug("abort() called");
+        logger.info("abort() called");
         return super.abort();
     }
 
@@ -248,7 +244,7 @@ public class HeaderExternalLoginModule extends AbstractLoginModule
     protected void clearState()
     {
         // TODO:  Do we need to override this method?
-        logger.debug("clearState() called");
+        logger.info("clearState() called");
         super.clearState();
     }
 }
