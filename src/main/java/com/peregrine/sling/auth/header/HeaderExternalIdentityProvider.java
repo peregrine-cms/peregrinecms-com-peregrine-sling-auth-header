@@ -52,7 +52,6 @@ public class HeaderExternalIdentityProvider implements ExternalIdentityProvider
     public HeaderExternalIdentityProvider()
     {
         // Default constructor
-        logger.info("Default constructor called");
     }
 
     @Activate

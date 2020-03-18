@@ -16,7 +16,13 @@ $ mvn clean install sling:install
    * Class Name (jaas.classname) = com.peregrine.sling.auth.header.HeaderExternalLoginModule
    * Options (jaas.options) = _leave empty_
    
-3. Test a header-based authentication request.
+3. Create a configuration for _Apache Jackrabbit Oak Default Sync Handler_ 
+   (org.apache.jackrabbit.oak.spi.security.authentication.external.impl.DefaultSyncHandler).
+
+   * Sync Handler Name (handler-name) = default
+   * Leave all other defaults as-is.
+
+4. Test a header-based authentication request.
 
 ```
 curl -s -v -H "REMOTE_USER: someuser" http://localhost:8080/
