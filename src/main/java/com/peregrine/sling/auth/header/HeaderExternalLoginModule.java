@@ -27,6 +27,7 @@ import org.apache.jackrabbit.oak.spi.security.authentication.external.*;
 import org.apache.jackrabbit.oak.spi.whiteboard.Whiteboard;
 import org.apache.jackrabbit.oak.spi.whiteboard.WhiteboardUtils;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +65,6 @@ public class HeaderExternalLoginModule extends AbstractLoginModule
 
     public HeaderExternalLoginModule()
     {
-        logger.debug("Initializing default constructor");
     }
 
     @Override
@@ -130,11 +130,6 @@ public class HeaderExternalLoginModule extends AbstractLoginModule
                 {
                     throw new SyncException("Cannot synchronize user. userManager == null");
                 }
-                logger.debug("Got UserManager");
-
-
-                userManager.createUser(userId, (new char[0]).toString());
-                logger.info("Created user: '{}'", userId);
 
                 int numAttempt = 0;
                 while (numAttempt++ < MAX_SYNC_ATTEMPTS)
@@ -144,12 +139,17 @@ public class HeaderExternalLoginModule extends AbstractLoginModule
                     {
                         context = syncHandler.createContext(externalIdentityProvider, userManager,
                                 new ValueFactoryImpl(root, NamePathMapper.DEFAULT));
-                        context.sync(userId);
+                        // Note: The SyncContext will only create a user in the repository if you use the
+                        // DefaultSyncContext.sync(ExternalIdentity) method. It will NOT create a user if use
+                        // the DefaultSyncContext.sync(String) method.
+                        SyncResult syncResult = context.sync(externalUser);
+                        logger.info("Synced user: '{}' wth status: '{}'", externalUser.getId(), syncResult.getStatus());
+
                         root.commit();
-                        logger.info("Synced user: '{}'", externalUser.getId());
                         return;
                     } catch (CommitFailedException e)
                     {
+                        logger.error("Error syncing user: '{}'", userId, e);
                         root.refresh();
                     } finally
                     {
@@ -179,7 +179,6 @@ public class HeaderExternalLoginModule extends AbstractLoginModule
     @Override
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options)
     {
-        logger.debug("initialize() called");
         super.initialize(subject, callbackHandler, sharedState, options);
 
         // 1. Get Whiteboard
@@ -198,7 +197,6 @@ public class HeaderExternalLoginModule extends AbstractLoginModule
             logger.error("Header login module needs ExternalIdentityProviderManager.");
             return;
         }
-        logger.debug("Got ExternalIdentityProviderManager");
 
         // 3. get Identity Provider
         externalIdentityProvider = externalIdentityProviderManager.getProvider(HeaderExternalIdentityProvider.NAME);
@@ -208,28 +206,23 @@ public class HeaderExternalLoginModule extends AbstractLoginModule
                     HeaderExternalIdentityProvider.NAME);
             return;
         }
-        logger.debug("Got ExternalIdentityProvider");
-
 
         // 4. get Sync Manager
-        SyncManager syncMgr = WhiteboardUtils.getService(whiteboard, SyncManager.class);
-        if (null == syncMgr)
+        SyncManager syncManager = WhiteboardUtils.getService(whiteboard, SyncManager.class);
+        if (null == syncManager)
         {
             logger.error("Header login module needs SyncManager.");
             return;
         }
-        logger.debug("Got SyncManager");
 
-        // 5. Get Syn Handler
-        // TODO: Remember to create the OSGi configuration
+        // 5. Get Sync Handler
         String syncHandlerName = "default";
-        syncHandler = syncMgr.getSyncHandler(syncHandlerName);
+        syncHandler = syncManager.getSyncHandler(syncHandlerName);
         if (null == syncHandler)
         {
             logger.error("Header login module needs SyncHandler. Can't get SyncHandler: '{}'", syncHandlerName);
             return;
         }
-        logger.debug("Got SyncHandler: '{}'", syncHandler);
     }
 
     @Override
