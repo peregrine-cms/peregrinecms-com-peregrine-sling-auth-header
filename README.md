@@ -1,13 +1,15 @@
-# Header Login Module
+# External Header Login Module 
 
-1. Deploy this bundle.
+1. Deploy the `oak-auth-external` bundle to Sling9. This is not provided by default in Sling.
+
+2. Deploy this project (External Header Login Module).
 
 ```
 $ mvn clean install sling:install
 ```
 
 
-2. Log into the [Apache Sling Configuration Console](org.apache.felix.jaas.Configuration.factory) and create a 
+3. Log into the [Apache Sling Configuration Console](org.apache.felix.jaas.Configuration.factory) and create a 
    configuration for the _Apache Felix JAAS Configuration Factory_ (org.apache.felix.jaas.Configuration.factory).
    
    * Control Flag (jaas.controlFlag) = Sufficient
@@ -16,13 +18,13 @@ $ mvn clean install sling:install
    * Class Name (jaas.classname) = com.peregrine.sling.auth.header.HeaderExternalLoginModule
    * Options (jaas.options) = _leave empty_
    
-3. Create a configuration for _Apache Jackrabbit Oak Default Sync Handler_ 
+4. Create a configuration for _Apache Jackrabbit Oak Default Sync Handler_ 
    (org.apache.jackrabbit.oak.spi.security.authentication.external.impl.DefaultSyncHandler).
 
    * Sync Handler Name (handler-name) = default
    * Leave all other defaults as-is.
 
-4. Test a header-based authentication request.
+5. Test a header-based authentication request.
 
 ```
 curl -s -v -H "REMOTE_USER: someuser" http://localhost:8080/
@@ -32,7 +34,7 @@ curl -s -v -H "REMOTE_USER: someuser" http://localhost:8080/
 
 In this section, we will build a base version of Sling9 that includes all dependencies and configurations
 using the Provisioning Model. Then, we will create a new Docker image for Peregrine that leverages our
-custom version launchpad.
+custom version of launchpad.
 
 1. Build this project. This will install the bundle into your local Maven repository.
 
@@ -57,7 +59,7 @@ $ cd sling/peregrine-builder
 $ mvn clean install
 ```
 
-5. Copy the newly built Sling launchpad JAR to the peregrine-cms/resources directory.
+5. Copy the newly built Sling launchpad JAR to the `peregrine-cms/resources` directory.
 
 ```
 $ cp target/com.peregrine-cms.sling.launchpad-9.1.jar ../../resources/
