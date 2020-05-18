@@ -22,14 +22,19 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.osgi.service.metatype.annotations.Option;
 
 @ObjectClassDefinition(name = "Header Authentication Handler Configuration", description = "Configuration options for the Header Authentication Handler.")
-public @interface HeaderAuthenticationHandlerConfig {
+public @interface HeaderAuthenticationHandlerConfig
+{
 
-	public static final String DEFAULT_HEADER_AUTH_LOGIN_COOKIE = "mod_auth_openidc_session";
-	public static final String DEFAULT_HEADER_AUTH_REMOTE_USER_HEADER = "REMOTE_USER";
+    public static final String DEFAULT_HEADER_AUTH_LOGIN_COOKIE = "mod_auth_openidc_session";
+    public static final String DEFAULT_HEADER_AUTH_REMOTE_USER_HEADER = "REMOTE_USER";
+	public static final String HEADER_AUTH_SHARED_SECRET_HEADER = "X-Auth-Header-Shared-Secret";
 
 	@AttributeDefinition(name = "Login Cookie", description = "The name of the login cookie (if there is one) that indicates that a user is logged in.")
-	String header_auth_login_cookie() default DEFAULT_HEADER_AUTH_LOGIN_COOKIE;
+    String header_auth_login_cookie() default DEFAULT_HEADER_AUTH_LOGIN_COOKIE;
 
-	@AttributeDefinition(name = "Remote User Header", description = "The HTTP header used to identify the logged in user")
-	String header_auth_remote_user_header() default DEFAULT_HEADER_AUTH_REMOTE_USER_HEADER;
+    @AttributeDefinition(name = "Remote User Header", description = "The HTTP header used to identify the logged in user")
+    String header_auth_remote_user_header() default DEFAULT_HEADER_AUTH_REMOTE_USER_HEADER;
+
+    @AttributeDefinition(name = "Shared Secret", description = "Shared secret")
+    String header_auth_shared_secret() default "";
 }

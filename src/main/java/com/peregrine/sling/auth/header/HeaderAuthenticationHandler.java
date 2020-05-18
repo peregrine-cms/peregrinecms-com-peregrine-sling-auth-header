@@ -32,6 +32,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Cookie;
 import java.io.IOException;
 
+import static com.peregrine.sling.auth.header.HeaderAuthenticationHandlerConfig.HEADER_AUTH_SHARED_SECRET_HEADER;
+
 @Component(
         service = AuthenticationHandler.class,
         name = "Header Authentication Handler",
@@ -49,24 +51,35 @@ public class HeaderAuthenticationHandler extends DefaultAuthenticationFeedbackHa
  
     private String loginCookie;
     private String remoteUserHeader;
+    private String sharedSecret;
 
     /**
-     * Checks the request for a header named {@value #HTTP_HEADER_REMOTE_USER}. If the header contains
-     * a non-empty remote user value, then the value is assumed to be a pre-authenitcated user from
-     * an upstream system (i.e. web server) and a HeaderCredentials is created with the username. 
-     * <code>null</code> is returned otherwise.  
+     * Checks the request for the presence of two request headers: the remote user and shared secret. If either are
+     * missing, the request is likely not intended for this authentication handler and credential extraction is
+     * ignored by this handler. Any downstream handlers are then executed by Sling.
+     *
+     * If the shared keys match and there is a non-empty remote user in the request, this handler assumes that
+     * that the upstream system (i.e. Apache) has already authenticated the user and is passing the remote user
+     * to us. When this occurs, this handler creates a custom credential using the remote user name and sets the
+     * pre-authentication marker.
+     *
+     * @return A valid AuthenticationInfo object with a credential object set and pre-authentication marker set.
      */
     @Override
     public AuthenticationInfo extractCredentials(HttpServletRequest request, HttpServletResponse response)
     {
-        final String uid = request.getHeader(remoteUserHeader);
-
-        if (StringUtils.isNotBlank(uid))
+        if (handleAuthRequest(request))
         {
-            logger.debug("Found '{}={}' header.", remoteUserHeader, uid);
-            final AuthenticationInfo authenticationInfo = new AuthenticationInfo(AUTH_TYPE, uid);
-            authenticationInfo.put("user.jcr.credentials", new HeaderCredentials(uid));
-            return authenticationInfo;
+            final String username = request.getHeader(remoteUserHeader);
+            final String sharedSecret = request.getHeader(HEADER_AUTH_SHARED_SECRET_HEADER);
+
+            if (isValidSharedSecret(sharedSecret) && isValidUsername(username))
+            {
+                logger.debug("Creating credentials and setting pre-authentication marker for user: '{}'", username);
+                final AuthenticationInfo authenticationInfo = new AuthenticationInfo(AUTH_TYPE, username);
+                authenticationInfo.put("user.jcr.credentials", new HeaderCredentials(username));
+                return authenticationInfo;
+            }
         }
 
         return null;
@@ -107,5 +120,50 @@ public class HeaderAuthenticationHandler extends DefaultAuthenticationFeedbackHa
     {
         this.loginCookie = config.header_auth_login_cookie();
         this.remoteUserHeader = config.header_auth_remote_user_header();
+        this.sharedSecret = config.header_auth_shared_secret();
+    }
+
+    /**
+     * Determines whether this handler should attempt to extract the credentials from the request. At a minimum this
+     * handlers needs two request headers: a header for the shared secret and a header for the remote user.
+     *
+     * @param request
+     * @return <code>true</code> if it should handle the credentials extraction and <code>false</code> otherwise.
+     */
+    private boolean handleAuthRequest(final HttpServletRequest request)
+    {
+        return (request != null) &&
+                StringUtils.isNotEmpty(request.getHeader(HEADER_AUTH_SHARED_SECRET_HEADER)) &&
+                StringUtils.isNotEmpty(request.getHeader(remoteUserHeader));
+    }
+
+    /**
+     * Validates the shared secret between the client and Sling.
+     *
+     * @param clientSharedSecret Shared key from client request
+     * @return <code>true</code> if keys match and <code>false</code> otherwise.
+     */
+    private boolean isValidSharedSecret(final String clientSharedSecret)
+    {
+        if (clientSharedSecret != null && clientSharedSecret.equals(this.sharedSecret)) {
+            return true;
+        }
+
+        logger.warn("Shared keys do not match. This is either a configuration error or a malicious request");
+        return false;
+    }
+
+    /**
+     * Determines if the username is valid.
+     *
+     * @param username
+     * @return <code>true</code> if valid and <code>false</code> otherwise.
+     */
+    private boolean isValidUsername(final String username)
+    {
+        // TODO: Are there other constraints to look into (e.g., allowed characters, max length, collision with system users.
+        // Restrict based on oauth conventions or email as format?
+        return StringUtils.isNotBlank(username) &&
+            !"admin".equalsIgnoreCase(username);
     }
 }
