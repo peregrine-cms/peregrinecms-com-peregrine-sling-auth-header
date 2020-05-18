@@ -27,7 +27,6 @@ import org.apache.jackrabbit.oak.spi.security.authentication.external.*;
 import org.apache.jackrabbit.oak.spi.whiteboard.Whiteboard;
 import org.apache.jackrabbit.oak.spi.whiteboard.WhiteboardUtils;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,17 +80,20 @@ public class HeaderExternalLoginModule extends AbstractLoginModule
         if (credentials instanceof HeaderCredentials)
         {
             final String userId = ((HeaderCredentials) credentials).getUserId();
-            if (userId == null)
-            {
-                logger.warn("Could not extract userId from credentials");
-            } else
+            if (userId != null)
             {
                 sharedState.put(SHARED_KEY_PRE_AUTH_LOGIN, new PreAuthenticatedLogin(userId));
                 sharedState.put(SHARED_KEY_CREDENTIALS, new SimpleCredentials(userId, new char[0]));
                 sharedState.put(SHARED_KEY_LOGIN_NAME, userId);
                 logger.debug("Adding pre-authenticated login user '{}' to shared state.", userId);
 
+                // TODO: Only sync user on first login
+                // TODO: Can we wire the user sync instead of calling manully?
                 handleUserSync(userId);
+            }
+            else
+            {
+                logger.warn("Could not extract userId from credentials");
             }
         }
 
@@ -112,12 +114,9 @@ public class HeaderExternalLoginModule extends AbstractLoginModule
                 syncedIdentity = syncHandler.findIdentity(userMgr, userId);
                 if (syncedIdentity != null)
                 {
-                    logger.info("Found identity: '{}' for user: '{}'", syncedIdentity, userId);
-                    // TODO: Should we sync existing users?
+                    logger.debug("Found identity: '{}' for user: '{}'", syncedIdentity, userId);
                     return;
                 }
-
-                logger.debug("Could not find existing identity: '{}'", userId);
 
                 Root root = getRoot();
                 if (null == root)
@@ -188,7 +187,6 @@ public class HeaderExternalLoginModule extends AbstractLoginModule
             logger.error("Header login module needs Whiteboard.");
             return;
         }
-        logger.debug("Got Whiteboard");
 
         // 2. Get Identity Provider Manager
         ExternalIdentityProviderManager externalIdentityProviderManager = WhiteboardUtils.getService(whiteboard, ExternalIdentityProviderManager.class);
@@ -229,7 +227,6 @@ public class HeaderExternalLoginModule extends AbstractLoginModule
     public boolean abort() throws LoginException
     {
         // TODO:  Do we need to override this method?
-        logger.info("abort() called");
         return super.abort();
     }
 
@@ -237,7 +234,6 @@ public class HeaderExternalLoginModule extends AbstractLoginModule
     protected void clearState()
     {
         // TODO:  Do we need to override this method?
-        logger.info("clearState() called");
         super.clearState();
     }
 }
