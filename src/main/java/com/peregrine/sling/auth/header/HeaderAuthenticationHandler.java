@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Cookie;
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 import static com.peregrine.sling.auth.header.HeaderAuthenticationHandlerConfig.HEADER_AUTH_SHARED_SECRET_HEADER;
 
@@ -52,6 +53,7 @@ public class HeaderAuthenticationHandler extends DefaultAuthenticationFeedbackHa
     private String loginCookie;
     private String remoteUserHeader;
     private String sharedSecret;
+    private Pattern usernameWhitelist;
 
     /**
      * Checks the request for the presence of two request headers: the remote user and shared secret. If either are
@@ -79,6 +81,10 @@ public class HeaderAuthenticationHandler extends DefaultAuthenticationFeedbackHa
                 final AuthenticationInfo authenticationInfo = new AuthenticationInfo(AUTH_TYPE, username);
                 authenticationInfo.put("user.jcr.credentials", new HeaderCredentials(username));
                 return authenticationInfo;
+            }
+            else
+            {
+                logger.warn("Invalid shared secret or username for remote user: '{}'", username);
             }
         }
 
@@ -121,6 +127,7 @@ public class HeaderAuthenticationHandler extends DefaultAuthenticationFeedbackHa
         this.loginCookie = config.header_auth_login_cookie();
         this.remoteUserHeader = config.header_auth_remote_user_header();
         this.sharedSecret = config.header_auth_shared_secret();
+        this.usernameWhitelist = Pattern.compile(config.header_auth_username_whitelist());
     }
 
     /**
@@ -161,9 +168,8 @@ public class HeaderAuthenticationHandler extends DefaultAuthenticationFeedbackHa
      */
     private boolean isValidUsername(final String username)
     {
-        // TODO: Are there other constraints to look into (e.g., allowed characters, max length, collision with system users.
-        // Restrict based on oauth conventions or email as format?
         return StringUtils.isNotBlank(username) &&
-            !"admin".equalsIgnoreCase(username);
+            !"admin".equalsIgnoreCase(username) &&
+            usernameWhitelist.matcher(username).matches();
     }
 }

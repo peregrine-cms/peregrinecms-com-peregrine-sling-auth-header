@@ -89,7 +89,7 @@ public class HeaderExternalLoginModule extends AbstractLoginModule
                 sharedState.put(SHARED_KEY_PRE_AUTH_LOGIN, new PreAuthenticatedLogin(userId));
                 sharedState.put(SHARED_KEY_CREDENTIALS, new SimpleCredentials(userId, new char[0]));
                 sharedState.put(SHARED_KEY_LOGIN_NAME, userId);
-                logger.info("Adding pre-authenticated login user '{}' to shared state.", userId);
+                logger.debug("Adding pre-authenticated login user '{}' to shared state.", userId);
 
                 handleUserSync(userId);
             }
@@ -117,7 +117,7 @@ public class HeaderExternalLoginModule extends AbstractLoginModule
                     return;
                 }
 
-                logger.info("Could not find existing identity: '{}'", userId);
+                logger.debug("Could not find existing identity: '{}'", userId);
 
                 Root root = getRoot();
                 if (null == root)
@@ -143,7 +143,7 @@ public class HeaderExternalLoginModule extends AbstractLoginModule
                         // DefaultSyncContext.sync(ExternalIdentity) method. It will NOT create a user if use
                         // the DefaultSyncContext.sync(String) method.
                         SyncResult syncResult = context.sync(externalUser);
-                        logger.info("Synced user: '{}' wth status: '{}'", externalUser.getId(), syncResult.getStatus());
+                        logger.debug("Synced user: '{}' wth status: '{}'", externalUser.getId(), syncResult.getStatus());
 
                         root.commit();
                         return;
