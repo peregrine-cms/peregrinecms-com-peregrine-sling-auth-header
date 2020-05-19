@@ -17,18 +17,29 @@
 package com.peregrine.sling.auth.header;
 
 import javax.jcr.Credentials;
+import java.util.Map;
 
+/**
+ *
+ */
 public class HeaderCredentials implements Credentials
 {
     private String userId;
+    private Map<String, Object> profile;
 
-    public HeaderCredentials(String userId)
+    public HeaderCredentials(String userId, Map<String, Object> profile)
     {
         this.userId = userId;
+        this.profile = profile;
     }
 
     public String getUserId()
     {
         return userId;
+    }
+
+    public Map<String, Object> getProfile()
+    {
+        return profile;
     }
 }

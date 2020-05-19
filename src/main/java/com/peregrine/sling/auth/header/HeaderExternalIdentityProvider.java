@@ -16,7 +16,6 @@
  */
 package com.peregrine.sling.auth.header;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.apache.jackrabbit.oak.spi.security.ConfigurationParameters;
 import org.apache.jackrabbit.oak.spi.security.authentication.external.*;
@@ -48,6 +47,7 @@ public class HeaderExternalIdentityProvider implements ExternalIdentityProvider
 
     private Map<String, Set<String>> userGroupMap = new HashMap<String, Set<String>>();
     private Set<String> groupIds = new HashSet<String>();
+    private Map<String, Object> userProfile = new HashMap<String, Object>();
 
     public HeaderExternalIdentityProvider()
     {
@@ -126,7 +126,9 @@ public class HeaderExternalIdentityProvider implements ExternalIdentityProvider
             @Override
             public Map<String, ?> getProperties()
             {
-                return ImmutableMap.of();
+                Map<String, Object> profile = getUserProfile();
+                profile.put("firstLogin", true);
+                return profile;
             }
         };
     }
@@ -160,5 +162,15 @@ public class HeaderExternalIdentityProvider implements ExternalIdentityProvider
     public Iterator<ExternalGroup> listGroups() throws ExternalIdentityException
     {
         throw new UnsupportedOperationException("listGroups");
+    }
+
+    public void setUserProfile(Map<String, Object> userProfile)
+    {
+        this.userProfile = userProfile;
+    }
+
+    public Map<String, Object> getUserProfile()
+    {
+        return userProfile;
     }
 }

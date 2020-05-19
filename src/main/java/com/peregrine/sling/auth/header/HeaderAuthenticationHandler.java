@@ -31,6 +31,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Cookie;
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import static com.peregrine.sling.auth.header.HeaderAuthenticationHandlerConfig.HEADER_AUTH_SHARED_SECRET_HEADER;
@@ -79,7 +82,7 @@ public class HeaderAuthenticationHandler extends DefaultAuthenticationFeedbackHa
             {
                 logger.debug("Creating credentials and setting pre-authentication marker for user: '{}'", username);
                 final AuthenticationInfo authenticationInfo = new AuthenticationInfo(AUTH_TYPE, username);
-                authenticationInfo.put("user.jcr.credentials", new HeaderCredentials(username));
+                authenticationInfo.put("user.jcr.credentials", new HeaderCredentials(username, getUserProfileFromHeader(request)));
                 return authenticationInfo;
             }
             else
@@ -171,5 +174,29 @@ public class HeaderAuthenticationHandler extends DefaultAuthenticationFeedbackHa
         return StringUtils.isNotBlank(username) &&
             !"admin".equalsIgnoreCase(username) &&
             usernameWhitelist.matcher(username).matches();
+    }
+
+    /**
+     * Gets user profile information from request headers.
+     *
+     * @param request
+     * @return A map containing each profile data point as a key in the map.
+     */
+    private Map<String, Object> getUserProfileFromHeader(final HttpServletRequest request)
+    {
+        Map<String, Object> userProfile = new HashMap<String, Object>();
+
+        Enumeration headers = request.getHeaderNames();
+        while(headers.hasMoreElements())
+        {
+            String header = (String) headers.nextElement();
+            // TODO: ADD header prefix to configuration admin
+            if (StringUtils.isNoneBlank(header) && header.startsWith("OIDC_CLAIM_"))
+            {
+                userProfile.put(header, request.getHeader(header));
+            }
+        }
+
+        return userProfile;
     }
 }

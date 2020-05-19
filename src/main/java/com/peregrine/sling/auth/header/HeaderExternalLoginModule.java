@@ -87,9 +87,9 @@ public class HeaderExternalLoginModule extends AbstractLoginModule
                 sharedState.put(SHARED_KEY_LOGIN_NAME, userId);
                 logger.debug("Adding pre-authenticated login user '{}' to shared state.", userId);
 
-                // TODO: Only sync user on first login
-                // TODO: Can we wire the user sync instead of calling manully?
-                handleUserSync(userId);
+                // TODO: Only sync user on first login?
+                // TODO: Can we wire the user sync instead of calling manually?
+                handleUserSync((HeaderCredentials)credentials);
             }
             else
             {
@@ -101,10 +101,13 @@ public class HeaderExternalLoginModule extends AbstractLoginModule
         return false;
     }
 
-    private void handleUserSync(final String userId)
+    private void handleUserSync(final HeaderCredentials credentials)
     {
+        final String userId = credentials.getUserId();
+
         try
         {
+
             SyncedIdentity syncedIdentity = null;
             UserManager userMgr = getUserManager();
             externalUser = externalIdentityProvider.getUser(userId);
@@ -117,6 +120,9 @@ public class HeaderExternalLoginModule extends AbstractLoginModule
                     logger.debug("Found identity: '{}' for user: '{}'", syncedIdentity, userId);
                     return;
                 }
+
+                // Inject user profile
+                ((HeaderExternalIdentityProvider)externalIdentityProvider).setUserProfile(credentials.getProfile());
 
                 Root root = getRoot();
                 if (null == root)
@@ -178,6 +184,8 @@ public class HeaderExternalLoginModule extends AbstractLoginModule
     @Override
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options)
     {
+        // TODO: Refactor implementation to use DS instead of manually wiring with whiteboard.
+
         super.initialize(subject, callbackHandler, sharedState, options);
 
         // 1. Get Whiteboard
