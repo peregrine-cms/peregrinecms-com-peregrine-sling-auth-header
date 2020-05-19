@@ -57,6 +57,7 @@ public class HeaderAuthenticationHandler extends DefaultAuthenticationFeedbackHa
     private String remoteUserHeader;
     private String sharedSecret;
     private Pattern usernameWhitelist;
+    private Pattern userProfileHeaderWhitelist;
 
     /**
      * Checks the request for the presence of two request headers: the remote user and shared secret. If either are
@@ -131,6 +132,7 @@ public class HeaderAuthenticationHandler extends DefaultAuthenticationFeedbackHa
         this.remoteUserHeader = config.header_auth_remote_user_header();
         this.sharedSecret = config.header_auth_shared_secret();
         this.usernameWhitelist = Pattern.compile(config.header_auth_username_whitelist());
+        this.userProfileHeaderWhitelist = Pattern.compile(config.header_auth_user_profile_header_whitelist());
     }
 
     /**
@@ -190,8 +192,7 @@ public class HeaderAuthenticationHandler extends DefaultAuthenticationFeedbackHa
         while(headers.hasMoreElements())
         {
             String header = (String) headers.nextElement();
-            // TODO: ADD header prefix to configuration admin
-            if (StringUtils.isNoneBlank(header) && header.startsWith("OIDC_CLAIM_"))
+            if (StringUtils.isNoneBlank(header) && userProfileHeaderWhitelist.matcher(header).matches())
             {
                 userProfile.put(header, request.getHeader(header));
             }
