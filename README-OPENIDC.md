@@ -6,15 +6,17 @@ includes the following systems:
 
 * [Google's OAuth 2.0 API](https://developers.google.com/identity/protocols/oauth2/openid-connect) 
 * Apache HTTPD with [mod_auth_openidc](https://github.com/zmartzone/mod_auth_openidc) 
-* Peregrine CMS
+* [Peregrine CMS](Header Authentication Handler Configuration)
 * Header External Login Module (this project)
 
 ## Prerequisites
 
 * Java JDK 8
-* Apache Maven +3.5
+* Apache Maven 3.5+
 
-## Peregrine CMS Installation
+## Manual Installation
+
+### Peregrine CMS Installation
 
 1. Visit [https://github.com/headwirecom/peregrine-cms](https://github.com/headwirecom/peregrine-cms) and install
    Peregrine per the README.
@@ -22,7 +24,7 @@ includes the following systems:
 2. Check that Peregrine has the `oak-auth-external` bundle installed it. If it doesn't, you don't have a version of
    Peregrine that supports the Header External Login Module.
 
-## Header External Login Module Installation
+### Header External Login Module Installation
 
 1. Deploy this project to Peregrine.
 
@@ -30,7 +32,7 @@ includes the following systems:
 $ mvn clean install sling:install
 ```
 
-## Header External Login Module Configuration
+### Header External Login Module Configuration
 
 1. Log into the [Apache Sling Configuration Console](http://localhost:8080/system/console/configMgr) and create a 
    configuration for the _Apache Felix JAAS Configuration Factory_ (`org.apache.felix.jaas.Configuration.factory`).
@@ -61,7 +63,7 @@ $ mvn clean install sling:install
    * User Path Prefix (user.pathPrefix) = `tenants`
    * Leave all other defaults as-is.
    
-##  Configure Google's OpenID Connect  
+###  Configure Google's OpenID Connect  
 
 Refer to Google's [OpenID Connect](https://developers.google.com/identity/protocols/oauth2/openid-connect) documentation
 and complete the following steps:
@@ -70,9 +72,9 @@ and complete the following steps:
 2. Set a redirect URI
 3. Customize the user consent screen
 
-## Apache Installation and Configuration
+### Apache Installation and Configuration
 
-This sections, assumes that Apache will be installed on Ubuntu.
+This section assumes that Apache will be installed on Ubuntu.
 
 1. Install Apache and the `mod_auth_openidc` module.
 
@@ -82,7 +84,7 @@ $ sudo apt update -q  && apt-get install -q -y \
          libapache2-mod-auth-openidc
 ```
 
-2. Create a vhost file: `/etc/apache2/sites-available/peregrine.conf `:
+2. Create a vhost file: `/etc/apache2/sites-available/peregrine.conf`:
 
 ```
 <VirtualHost *:80>
@@ -148,7 +150,7 @@ $ sudo apt update -q  && apt-get install -q -y \
 </VirtualHost>
 ```
 
-3. Install required modules by the vhost, enable them.
+3. Install and configure the modules required by the vhost configuration above.
 
 ```
 $ sudo curl -L -O https://dl-ssl.google.com/dl/linux/direct/mod-pagespeed-stable_current_amd64.deb \
@@ -162,13 +164,13 @@ $ sudo curl -L -O https://dl-ssl.google.com/dl/linux/direct/mod-pagespeed-stable
            && a2ensite peregrine
 ```
 
-4. Create script to export all the environment variables defined in the vhost.
+4. Create a script to export all environment variables defined in the vhost.
 
 ```
 #!/bin/bash
 
 export APACHE_DOMAIN=Your domain
-export APACHE_PROXY_URL= Absolute URL to your Peregrine instance
+export APACHE_PROXY_URL=Absolute URL to your Peregrine instance
 export OIDC_PROVIDER_METADATA_URL=Open ID Connect metadata URL
 export OIDC_CLIENT_ID=Open ID Connect client ID 
 export OIDC_CLIENT_SECRET=Open ID Connect client secret
@@ -176,4 +178,8 @@ export OIDC_CRYPTO_PASSPHRASE=Open ID Connect crypto pass phrase
 export AUTH_HEADER_SHARED_SECRET=Set to the shared secret define in Header Authentication Handler Configuration in Felix
 ```
 
-5. Source your environment variables script and start Apache
+5. Source your environment variables script and start Apache.
+
+## Docker Installation
+
+TODO
