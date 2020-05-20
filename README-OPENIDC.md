@@ -182,4 +182,33 @@ export AUTH_HEADER_SHARED_SECRET=Set to the shared secret define in Header Authe
 
 ## Docker Installation
 
-TODO
+The Docker images are the fast way to get to started.
+
+1. Follow the steps in _Configure Google's OpenID Connect_ above.
+
+2. Start the Peregrine CMS container.
+
+```
+$ docker pull peregrinecms/peregrine-cms:sso-20200519r1
+$ docker run -it -p 8080:8080 peregrinecms/peregrine-cms:sso-20200519r1
+```
+
+3. Log into Peregrine directly as admin/admin on http://localhost:8080/ and set a shared secret in the 
+   _Header Authentication Handler Configuration_ configuration console.
+
+4. Start the Apache container. Set the environment variables accordingly.
+
+```
+$ docker pull peregrinecms/apache-stage:sso-20200519r1
+$ docker run -dit --name ${DOCKER_CONTAINER_NAME} -p 8888:80 \
+    -e APACHE_DOMAIN=SETME \
+    -e APACHE_PROXY_URL=SETME \
+    -e OIDC_PROVIDER_METADATA_URL=SETME \
+    -e OIDC_CLIENT_ID=SETME \
+    -e OIDC_CLIENT_SECRET=SETME \
+    -e OIDC_CRYPTO_PASSPHRASE=SETME \
+    -e AUTH_HEADER_SHARED_SECRET=SETME \
+    peregrinecms/apache-stage:sso-20200519r1
+```
+
+5. Visit [http://localhost:8888](http://localhost:8888) and you should be redirected to your IDP (i.e. Google).
