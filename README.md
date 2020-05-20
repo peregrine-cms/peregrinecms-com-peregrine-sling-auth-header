@@ -1,6 +1,39 @@
 # Header External Login Module 
 
-TODO
+The _Header External Login Module_ is a JAAS login module for Apache Sling that allows users to login in using a set of
+HTTP headers. The intended use case for this login module is to delegate authentication to an upstream system. This
+will typically be an SSO solution configured at the web-tier/web server that handles the user authentication and then
+proxies the request to Sling. As a practical example, Apache HTTPD, [mod_auth_openidc](https://github.com/zmartzone/mod_auth_openidc) and 
+[Google's OAuth 2.0 API](https://developers.google.com/identity/protocols/oauth2/openid-connect) were used during the
+development of this module. If you are interested in using this module to add OpenID Connect support to your Sling application,
+follow and the _Prerequisites_ and _Installation_ section below, then refer to [README-OPENIDC.md]() instead. To use
+the Header External Module on its own, continue reading.
+
+## How it Works
+
+This module follows the "Pre-Authentication combined with Login Module Chain" approach described on the 
+[Apache Jackrabbit](https://jackrabbit.apache.org/oak/docs/security/authentication/preauthentication.html) site.
+
+1. The `HeaderAuthenticationHandler` is responsible for detecting a valid header authentication request and extracting
+   the authenticated user name. It accomplishes this by performing some basic sanity checks such as shared key validation and
+   extracting the credentials from the `REMOTE_USER` (default) request header. It then creates a custom credentials 
+   instance, `HeaderCredentials`, with the `REMOTE_USER` value set as the user ID. These credentials are then stored
+   in a new `AuthenticationInfo` instance. It is important to note, that this module assumes that another upstream system
+   has already authenticated the user.
+   
+   WARNING: For security, the communication between the client and Sling should be encrypted using HTTPS. Secondly,
+   it is recommended that the client be a proxy server (i.e. Apache with mod_proxy) that handles the authentication
+   and sends the HTTP headers to Sling. These headers should never be allowed to be sent directly by an end user and 
+   the headers should never be returned by the proxy back to the end-user. Lastly, network-level ACLs should also be 
+   implemented to only allow traffic to Sling from the proxy. 
+   
+2. If the `HeaderAuthenticationHandler` detected an authenticated user, the Jackrabbit Oak Login chain is observed.
+   The module with the highest `JAAS ranking` is called first. In our case, this will be the `HeaderExternalLoginModule`.
+   The `HeaderExternalLoginModule` is responsible for checking that the Credential object is a `HeaderCredentials` object.
+   If it is, the login module sets a "Pre-Authentication Marker" on the shared state to signal down stream login modules
+   that the user is already authenticated. If this is a new user, a user account is created in the repository using the
+   default _Sync Handler_. It should be noted that the `HeaderExternalLoginModule.login()` method always returns
+   `false`. This is required to allow other modules in the chain to succeed and process the pre-authentication marker.
 
 ## Prerequisites
 
