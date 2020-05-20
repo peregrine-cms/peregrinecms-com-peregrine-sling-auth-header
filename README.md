@@ -20,7 +20,7 @@ $ mvn clean install sling:install
 
 ## Configuration
 
-1. Log into the [Apache Sling Configuration Console](org.apache.felix.jaas.Configuration.factory) and create a 
+1. Log into the [Apache Sling Configuration Console](http://localhost:8080/system/console/configMgr) and create a 
    configuration for the _Apache Felix JAAS Configuration Factory_ (`org.apache.felix.jaas.Configuration.factory`).
    The `jaas.ranking` must have a higher number than the other JAAS modules for this module to handle logins.
    

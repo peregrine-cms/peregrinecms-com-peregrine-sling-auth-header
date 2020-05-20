@@ -44,5 +44,5 @@ public @interface HeaderAuthenticationHandlerConfig
     String header_auth_username_whitelist() default DEFAULT_HEADER_AUTH_USERNAME_WHITELIST;
 
     @AttributeDefinition(name = "User Profile Header Whitelist Pattern", description = "Permitted regex pattern for allowed user profile headers")
-    String header_auth_user_profile_header_whitelist() default DEFAULT_HEADER_AUTH_USER_PROFILE_HEADER_WHITELIST;
+    String header_auth_user_profile_headert _whitelist() default DEFAULT_HEADER_AUTH_USER_PROFILE_HEADER_WHITELIST;
 }
