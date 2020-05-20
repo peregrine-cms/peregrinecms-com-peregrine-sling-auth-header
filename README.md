@@ -1,12 +1,12 @@
 # Header External Login Module 
 
-The _Header External Login Module_ is a JAAS login module for Apache Sling that allows users to login in using a set of
+The _Header External Login Module_ is a JAAS login module for Apache Sling that allows users to log in using a set of
 HTTP headers. The intended use case for this login module is to delegate authentication to an upstream system. This
 will typically be an SSO solution configured at the web-tier/web server that handles the user authentication and then
 proxies the request to Sling. As a practical example, Apache HTTPD, [mod_auth_openidc](https://github.com/zmartzone/mod_auth_openidc) and 
 [Google's OAuth 2.0 API](https://developers.google.com/identity/protocols/oauth2/openid-connect) were used during the
 development of this module. If you are interested in using this module to add OpenID Connect support to your Sling application,
-follow and the _Prerequisites_ and _Installation_ section below, then refer to [README-OPENIDC.md]() instead. To use
+follow the _Prerequisites_ and _Installation_ section below, then refer to [README-OPENIDC.md](README-OPENIDC.md). To use
 the Header External Module on its own, continue reading.
 
 ## How it Works
@@ -27,8 +27,8 @@ This module follows the "Pre-Authentication combined with Login Module Chain" ap
    the headers should never be returned by the proxy back to the end-user. Lastly, network-level ACLs should also be 
    implemented to only allow traffic to Sling from the proxy. 
    
-2. If the `HeaderAuthenticationHandler` detected an authenticated user, the Jackrabbit Oak Login chain is observed.
-   The module with the highest `JAAS ranking` is called first. In our case, this will be the `HeaderExternalLoginModule`.
+2. The standard Jackrabbit Oak Login chain is observed and the module with the highest `JAAS ranking` is called first. 
+   In our case, this will be the `HeaderExternalLoginModule`.
    The `HeaderExternalLoginModule` is responsible for checking that the Credential object is a `HeaderCredentials` object.
    If it is, the login module sets a "Pre-Authentication Marker" on the shared state to signal down stream login modules
    that the user is already authenticated. If this is a new user, a user account is created in the repository using the
