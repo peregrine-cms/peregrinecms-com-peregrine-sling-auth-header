@@ -16,7 +16,7 @@ This module follows the "Pre-Authentication combined with Login Module Chain" ap
 
 1. The `HeaderAuthenticationHandler` is responsible for detecting a valid header authentication request and extracting
    the authenticated user name. It accomplishes this by performing some basic sanity checks such as shared key validation and
-   extracting the credentials from the `REMOTE_USER` (default) request header. It then creates a custom credentials 
+   extracting the user name from the `REMOTE_USER` (default) request header. It then creates a custom credentials 
    instance, `HeaderCredentials`, with the `REMOTE_USER` value set as the user ID. These credentials are then stored
    in a new `AuthenticationInfo` instance. It is important to note, that this module assumes that another upstream system
    has already authenticated the user.
@@ -30,7 +30,7 @@ This module follows the "Pre-Authentication combined with Login Module Chain" ap
 2. The standard Jackrabbit Oak Login chain is observed and the module with the highest `JAAS ranking` is called first. 
    In our case, this will be the `HeaderExternalLoginModule`.
    The `HeaderExternalLoginModule` is responsible for checking that the Credential object is a `HeaderCredentials` object.
-   If it is, the login module sets a "Pre-Authentication Marker" on the shared state to signal down stream login modules
+   If it is, the login module sets a "Pre-Authentication Marker" on the shared state to signal ton down stream login modules
    that the user is already authenticated. If this is a new user, a user account is created in the repository using the
    default _Sync Handler_. It should be noted that the `HeaderExternalLoginModule.login()` method always returns
    `false`. This is required to allow other modules in the chain to succeed and process the pre-authentication marker.
