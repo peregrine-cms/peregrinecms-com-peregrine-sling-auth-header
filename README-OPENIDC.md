@@ -182,9 +182,9 @@ export AUTH_HEADER_SHARED_SECRET=Set to the shared secret define in Header Authe
 
 ## Docker Installation
 
-The Docker images are the fast way to get to started.
+The Docker images are the fastest way to get started.
 
-1. Follow the steps in _Configure Google's OpenID Connect_ above.
+1. Follow the steps in the _Configure Google's OpenID Connect_ section above.
 
 2. Start the Peregrine CMS container.
 
