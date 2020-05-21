@@ -31,6 +31,11 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
 
+    <inceptionYear>2020</inceptionYear>
+    <organization>
+        <name>headwire inc.</name>
+    </organization>
+
     <build>
         <plugins>
             <plugin>
@@ -76,6 +81,15 @@
                     <slingUrl>http://localhost:8080/system/console</slingUrl>
                     <user>admin</user>
                     <password>admin</password>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>1.13</version>
+                <configuration>
+                     <licenseName>peregrine-cms-license</licenseName>
+                    <licenseResolver>${project.baseUri}/src/license</licenseResolver>
                 </configuration>
             </plugin>
         </plugins>

@@ -53,7 +53,7 @@ $ mvn clean install sling:install
    * Username Whitelist Pattern (header.auth.username.whitelist) = `^[A-Za-z0-9+_.-]+@(.+)$`
    * User Profile Header Whitelist Pattern = `^OIDC_CLAIM_(.+)$` 
    
-   *NOTE* With exception of the _Shared Secret_, all values above should be used as defined to work correctly with 
+   *NOTE:* With the exception of the _Shared Secret_, all values above should be used as defined to work correctly with 
    `mod_auth_openidc`.
    
 3. Create a configuration for _Apache Jackrabbit Oak Default Sync Handler_.
@@ -68,7 +68,7 @@ $ mvn clean install sling:install
    * User Path Prefix (user.pathPrefix) = `tenants`
    * Leave all other defaults as-is.
    
-   *NOTE* By default, `user.propertyMapping` contains a mapping for `rep:fullname=cn`. It can be removed since this
+   *NOTE:* By default, `user.propertyMapping` contains a mapping for `rep:fullname=cn`. It can be removed since this
    only applies to LDAP. Additionally, you can define two types of user property mappings. Static property key/value
    pairs as shown with `preferences/firstLogin` and dynamic mappings as shown with the `OIDC_CLAIM_*` properties. Any
    HTTP header that is allowed by the _User Profile Header Whitelist Pattern_ in step #2 can be mapped to the repository.
@@ -98,11 +98,11 @@ $ sudo apt update -q  && apt-get install -q -y \
 
 * `${APACHE_DOMAIN}` - Your domain name
 * `${APACHE_PROXY_URL}` - Absolute URL to your Peregrine instance (i.e. http://localhost:8080/)
-* `${OIDC_PROVIDER_METADATA_URL}` - = Open ID Connect metadata URL (i.e. for Google it should be `https://accounts.google.com/.well-known/openid-configuration`)
+* `${OIDC_PROVIDER_METADATA_URL}` - = Open ID Connect metadata URL (i.e. for Google it should be https://accounts.google.com/.well-known/openid-configuration)
 * `${OIDC_CLIENT_ID}` - Your Open ID Connect client ID 
 * `${OIDC_CLIENT_SECRET}` - Your Open ID Connect client secret
 * `${OIDC_CRYPTO_PASSPHRASE}` = Your Open ID Connect crypto pass phrase. You can set this to any value you wish. The header login module has nothing to do with this.
-* `${AUTH_HEADER_SHARED_SECRET}` - Set this to the shared secret define in the _Header Authentication Handler Configuration_ in the Felix system console.
+* `${AUTH_HEADER_SHARED_SECRET}` - Set this to the shared secret defined in the _Header Authentication Handler Configuration_ in the Felix system console.
 
 ```
 <VirtualHost *:80>
@@ -126,11 +126,10 @@ $ sudo apt update -q  && apt-get install -q -y \
     OIDCPassClaimsAs        both
     OIDCAuthNHeader         REMOTE_USER
 
-    # OIDCRedirectURI is a URL that must point to a protected path (i.e. Location below),
-    # but does not point to any content on the server or the proxy. Basically, you can name 
-    # this URI whatever you like. It also needs to be ignored by the proxy pass (see below).
+    # OIDCRedirectURI is a URI that must be under the protected path (i.e. '/') but should not point to any content on the server 
+    # or be available on Sling/Peregrine. You can name this URI whatever you like. It also needs to be ignored by the proxy pass (see below).
     OIDCRedirectURI         /oidc/redirect_uri
-
+    
     <Location />
        AuthType openid-connect
        Require valid-user
