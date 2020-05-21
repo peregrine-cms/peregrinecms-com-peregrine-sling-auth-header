@@ -31,13 +31,13 @@ public @interface HeaderAuthenticationHandlerConfig
     public static final String DEFAULT_HEADER_AUTH_USERNAME_WHITELIST = "^[A-Za-z0-9+_.-]+@(.+)$";
     public static final String DEFAULT_HEADER_AUTH_USER_PROFILE_HEADER_WHITELIST = "^OIDC_CLAIM_(.+)$";
 
-	@AttributeDefinition(name = "Login Cookie", description = "The name of the login cookie (if there is one) that indicates that a user is logged in.")
+	@AttributeDefinition(name = "Login Cookie", description = "The name of the login cookie (if there is one) that indicates that a user is logged in. This cookie will be destroyed on logout.")
     String header_auth_login_cookie() default DEFAULT_HEADER_AUTH_LOGIN_COOKIE;
 
     @AttributeDefinition(name = "Remote User Header", description = "The HTTP header used to identify the logged in user")
     String header_auth_remote_user_header() default DEFAULT_HEADER_AUTH_REMOTE_USER_HEADER;
 
-    @AttributeDefinition(name = "Shared Secret", description = "Shared secret")
+    @AttributeDefinition(name = "Shared Secret", description = "Shared secret between this module and the client. Select any value you wish, but the client request header value must match this value.")
     String header_auth_shared_secret() default "";
 
     @AttributeDefinition(name = "Username Whitelist Pattern", description = "Permitted regex pattern for allowed remote user names")

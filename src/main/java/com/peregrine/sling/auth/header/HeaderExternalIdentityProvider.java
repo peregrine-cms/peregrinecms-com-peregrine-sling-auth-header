@@ -127,7 +127,6 @@ public class HeaderExternalIdentityProvider implements ExternalIdentityProvider
             public Map<String, ?> getProperties()
             {
                 Map<String, Object> profile = getUserProfile();
-                profile.put("firstLogin", true);
                 return profile;
             }
         };

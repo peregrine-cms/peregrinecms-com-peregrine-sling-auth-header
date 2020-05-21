@@ -14,15 +14,10 @@ includes the following systems:
 * Java JDK 8
 * Apache Maven 3.5+
 
-## Manual Installation
-
 ### Peregrine CMS Installation
 
 1. Visit [https://github.com/headwirecom/peregrine-cms](https://github.com/headwirecom/peregrine-cms) and install
    Peregrine per the README.
-   
-2. Check that Peregrine has the `oak-auth-external` bundle installed it. If it doesn't, you don't have a version of
-   Peregrine that supports the Header External Login Module.
 
 ### Header External Login Module Installation
 
@@ -35,22 +30,31 @@ $ mvn clean install sling:install
 ### Header External Login Module Configuration
 
 1. Log into the [Apache Sling Configuration Console](http://localhost:8080/system/console/configMgr) and create a 
-   configuration for the _Apache Felix JAAS Configuration Factory_ (`org.apache.felix.jaas.Configuration.factory`).
-   The `jaas.ranking` must have a higher number than the other JAAS modules for this module to handle logins.
+   configuration for the _Apache Felix JAAS Configuration Factory_ (`org.apache.felix.jaas.Configuration.factory`) with
+   the following values:
    
    * Control Flag (jaas.controlFlag) = `Sufficient`
    * Ranking (jaas.ranking) = `5000`
    * Realm Name (jaas.realmName) = `jackrabbit.oak`
    * Class Name (jaas.classname) = `com.peregrine.sling.auth.header.HeaderExternalLoginModule`
    * Options (jaas.options) = _leave empty_
-   
-2. Create a configuration for _Header Authentication Handler Configuration_.
+  
+   *NOTE:* To validate this JAAS configuration, visit [http://localhost:8080/system/console/jaas](http://localhost:8080/system/console/jaas)
+   and check that `com.peregrine.sling.auth.header.HeaderExternalLoginModule` has the highest rank. In a default Sling environment, the rank 
+   should be greater than `1000` so that this login module runs first. 
+    
+2. Create a configuration for the _Header Authentication Handler Configuration_ with the following values. The only value that should
+   be changed is the _Shared Secret_. Set this to a value of your choosing. The shared secret value will be used later in the Apache
+   configuration.
 
-   * Login Cookie (header.auth.login.cookie) = _leave empty_
+   * Login Cookie (header.auth.login.cookie) = `mod_auth_openidc_session`
    * Remote User Header (header.auth.remote.user.header) = `REMOTE_USER`
-   * Shared Secret (header.auth.shared.secret) = `secret`
+   * Shared Secret (header.auth.shared.secret) = _mysecret_
    * Username Whitelist Pattern (header.auth.username.whitelist) = `^[A-Za-z0-9+_.-]+@(.+)$`
    * User Profile Header Whitelist Pattern = `^OIDC_CLAIM_(.+)$` 
+   
+   *NOTE* With exception of the _Shared Secret_, all values above should be used as defined to work correctly with 
+   `mod_auth_openidc`.
    
 3. Create a configuration for _Apache Jackrabbit Oak Default Sync Handler_.
    (`org.apache.jackrabbit.oak.spi.security.authentication.external.impl.DefaultSyncHandler`).
@@ -58,10 +62,16 @@ $ mvn clean install sling:install
    * Sync Handler Name (handler-name) = `default`
    * User auto membership (user.autoMembership) = `all_tenants` 
    * User Property Mapping (user.propertyMapping) = 
-     * `preferences/firstLogin=firstLogin`
+     * `preferences/firstLogin="true"`
      * `profile/email=OIDC_CLAIM_email`
+     * `profile/avatar=OIDC_CLAIM_picture`
    * User Path Prefix (user.pathPrefix) = `tenants`
    * Leave all other defaults as-is.
+   
+   *NOTE* By default, `user.propertyMapping` contains a mapping for `rep:fullname=cn`. It can be removed since this
+   only applies to LDAP. Additionally, you can define two types of user property mappings. Static property key/value
+   pairs as shown with `preferences/firstLogin` and dynamic mappings as shown with the `OIDC_CLAIM_*` properties. Any
+   HTTP header that is allowed by the _User Profile Header Whitelist Pattern_ in step #2 can be mapped to the repository.
    
 ###  Configure Google's OpenID Connect  
 
@@ -84,17 +94,18 @@ $ sudo apt update -q  && apt-get install -q -y \
          libapache2-mod-auth-openidc
 ```
 
-2. Create a vhost file: `/etc/apache2/sites-available/peregrine.conf`:
+2. Create a vhost file: `/etc/apache2/sites-available/peregrine.conf` and replace the variables below accordingly:
+
+* `${APACHE_DOMAIN}` - Your domain name
+* `${APACHE_PROXY_URL}` - Absolute URL to your Peregrine instance (i.e. http://localhost:8080/)
+* `${OIDC_PROVIDER_METADATA_URL}` - = Open ID Connect metadata URL (i.e. for Google it should be `https://accounts.google.com/.well-known/openid-configuration`)
+* `${OIDC_CLIENT_ID}` - Your Open ID Connect client ID 
+* `${OIDC_CLIENT_SECRET}` - Your Open ID Connect client secret
+* `${OIDC_CRYPTO_PASSPHRASE}` = Your Open ID Connect crypto pass phrase. You can set this to any value you wish. The header login module has nothing to do with this.
+* `${AUTH_HEADER_SHARED_SECRET}` - Set this to the shared secret define in the _Header Authentication Handler Configuration_ in the Felix system console.
 
 ```
 <VirtualHost *:80>
-
-    Protocols h2 http/1.1
-
-    ModPagespeed unplugged
-
-    SetOutputFilter DEFLATE
-
     ServerAdmin webmaster@${APACHE_DOMAIN}
     DocumentRoot "/var/www/html"
     ServerName ${APACHE_DOMAIN}
@@ -120,22 +131,10 @@ $ sudo apt update -q  && apt-get install -q -y \
     # this URI whatever you like. It also needs to be ignored by the proxy pass (see below).
     OIDCRedirectURI         /oidc/redirect_uri
 
-    # Allow health check requests to be unauthenticated
-    <Location "/content/sites/themecleanflex/index.html">
-      Order deny,allow
-      Allow from all
-      Satisfy any
-    </Location>
-
     <Location />
        AuthType openid-connect
        Require valid-user
     </Location>
-
-    # Force HTTPS on load balancers
-    RewriteEngine On
-    RewriteCond %{HTTP:X-Forwarded-Proto} =http
-    RewriteRule . https://%{SERVER_NAME}%{REQUEST_URI} [L,R=permanent]
 
     ProxyRequests Off
     ProxyPreserveHost On
@@ -150,33 +149,12 @@ $ sudo apt update -q  && apt-get install -q -y \
 </VirtualHost>
 ```
 
+
 3. Install and configure the modules required by the vhost configuration above.
 
 ```
-$ sudo curl -L -O https://dl-ssl.google.com/dl/linux/direct/mod-pagespeed-stable_current_amd64.deb \
-           && dpkg -i mod-pagespeed-*.deb \
-           && a2enmod expires \
-           && a2enmod pagespeed \
-           && a2enmod proxy_http \
-           && a2enmod rewrite \
+$ sudo && a2enmod proxy_http \
            && a2enmod headers \
            && a2dissite 000-default \
            && a2ensite peregrine
 ```
-
-4. Create a script to export all environment variables defined in the vhost.
-
-```
-#!/bin/bash
-
-export APACHE_DOMAIN=Your domain
-export APACHE_PROXY_URL=Absolute URL to your Peregrine instance
-export OIDC_PROVIDER_METADATA_URL=Open ID Connect metadata URL
-export OIDC_CLIENT_ID=Open ID Connect client ID 
-export OIDC_CLIENT_SECRET=Open ID Connect client secret
-export OIDC_CRYPTO_PASSPHRASE=Open ID Connect crypto pass phrase
-export AUTH_HEADER_SHARED_SECRET=Set to the shared secret define in Header Authentication Handler Configuration in Felix
-```
-
-5. Source your environment variables script and start Apache.
-
