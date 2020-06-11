@@ -45,7 +45,7 @@ $ mvn clean install sling:install
     
 2. Create a configuration for the _Header Authentication Handler Configuration_ with the following values. The only value that should
    be changed is the _Shared Secret_. Set this to a value of your choosing. The shared secret value will be used later in the Apache
-   configuration.
+   configuration (`com.peregrine.sling.auth.header.HeaderAuthenticationHandler`)
 
    * Login Cookie (header.auth.login.cookie) = `mod_auth_openidc_session`
    * Remote User Header (header.auth.remote.user.header) = `REMOTE_USER`

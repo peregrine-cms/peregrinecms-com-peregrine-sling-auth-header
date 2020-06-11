@@ -49,7 +49,6 @@ import static com.peregrine.sling.auth.header.HeaderAuthenticationHandlerConfig.
 
 @Component(
         service = AuthenticationHandler.class,
-        name = "Header Authentication Handler",
         property = {
                 AuthenticationHandler.PATH_PROPERTY + "=/"
         },
