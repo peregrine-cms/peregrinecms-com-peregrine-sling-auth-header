@@ -1,0 +1,31 @@
+{
+  "id":"${project.groupId}:${project.artifactId}:slingfeature:sling_auth_header_configuration:${project.version}",
+  "bundles":[
+    {
+      "id":"org.apache.jackrabbit:oak-auth-external:1.26.0",
+      "start-level":"20"
+    }
+  ],
+  "configurations": {
+    "org.apache.felix.jaas.Configuration.factory~slingAuthHeader": {
+      "jaas.controlFlag": "Sufficient",
+      "jaas.ranking": 5000,
+      "jaas.realmName": "jackrabbit.oak",
+      "jaas.classname": "com.peregrine.sling.auth.header.HeaderExternalLoginModule",
+      "jaas.options": ""
+    },
+    "com.peregrine.sling.auth.header.HeaderAuthenticationHandler": {
+      "header.auth.login.cookie": "",
+      "header.auth.remote.user.header": "REMOTE_USER",
+      "header.auth.shared.secret": "change-on-install-secret",
+      "header.auth.username.whitelist": "^[A-Za-z0-9+_.-]+@(.+)$",
+      "header.auth.user.profile.header.whitelist": "X-Auth-Header(.+)$"
+    },
+    "org.apache.jackrabbit.oak.spi.security.authentication.external.impl.DefaultSyncHandler~slingAuthHeader": {
+      "handler-name": "default",
+      "user.autoMembership": "all_tenants",
+      "user.propertyMapping": "preferences/firstLogin=firstLogin",
+      "user.pathPrefix": "tenants"
+    }
+  }
+}
