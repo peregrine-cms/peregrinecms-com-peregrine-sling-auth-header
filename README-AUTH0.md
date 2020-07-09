@@ -77,13 +77,11 @@ $ mvn clean install sling:install
 
 Start by register for an account at [https://auth0.com](https://auth0.com). For the purpose of demonstration,
 we will assume that we are running Apache locally on port 80 and that Peregrine is running locally on port 8080. If
-you want to run this on your public-facing site, adjust replace localhost with your domain name and change the 
-scheme from `http` to `https`.
+you want to run this on your public-facing site, replace localhost with your domain name.
 
 1. From the Auth0 dashboard, navigate to _Applications_ and create an application.
 
-2. Name your application anything you like and select _Regular Web Applications_ as the type. For example,
-   _Local Peregrine SSO_.
+2. Name your application anything you like and select _Regular Web Applications_ as the type.
 
 3. Select _Apache_ as the project type.
 
@@ -121,7 +119,7 @@ $ sudo apt update -q  && apt-get install -q -y \
 
 * `${APACHE_DOMAIN}` - Your domain name
 * `${APACHE_PROXY_URL}` - Absolute URL to your Peregrine instance (i.e. http://localhost:8080/)
-* `${OIDC_PROVIDER_METADATA_URL}` - = Open ID Connect metadata URL (i.e. for Auth0 it should be https://DomainListedInAuth0Settings/.well-known/openid-configuration)
+* `${OIDC_PROVIDER_METADATA_URL}` - Open ID Connect metadata URL (i.e. for Auth0 it should be https://DomainListedInAuth0Settings/.well-known/openid-configuration)
 * `${OIDC_CLIENT_ID}` - Your Open ID Connect client ID 
 * `${OIDC_CLIENT_SECRET}` - Your Open ID Connect client secret
 * `${OIDC_CRYPTO_PASSPHRASE}` = Your Open ID Connect crypto pass phrase. You can set this to any value you wish. The header login module has nothing to do with this.

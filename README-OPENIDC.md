@@ -6,7 +6,7 @@ includes the following systems:
 
 * [Google's OAuth 2.0 API](https://developers.google.com/identity/protocols/oauth2/openid-connect) 
 * Apache HTTPD with [mod_auth_openidc](https://github.com/zmartzone/mod_auth_openidc) 
-* [Peregrine CMS](Header Authentication Handler Configuration)
+* [Peregrine CMS](https://www.peregrine-cms.com/content/sites/peregrine.html)
 * Header External Login Module (this project)
 
 ## Prerequisites
