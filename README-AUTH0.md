@@ -5,7 +5,7 @@ The following software components are used:
 
 * [Auth0 OpenID Connect](https://auth0.com/docs/protocols/oidc)
 * Apache HTTPD with [mod_auth_openidc](https://github.com/zmartzone/mod_auth_openidc) 
-* [Peregrine CMS](Header Authentication Handler Configuration)
+* [Peregrine CMS](https://www.peregrine-cms.com/content/sites/peregrine.html)
 * Header External Login Module (this project)
 
 ## Prerequisites
