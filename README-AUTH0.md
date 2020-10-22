@@ -1,12 +1,11 @@
-# Header External Login Module and Open ID Connect Sample Integration
+# Auth0 OpenID Connect Integration
 
-This document describes the process for integrating Open ID Connect with a Sling-based CMS called 
-[Peregrine CMS](https://www.peregrine-cms.com/content/sites/peregrine.html) with OpenID Connect. The sample architecture
-includes the following systems:
+This document describes the process for integrating Auth0 with the _Header External Login Module_. 
+The following software components are used:
 
-* [Google's OAuth 2.0 API](https://developers.google.com/identity/protocols/oauth2/openid-connect) 
+* [Auth0 OpenID Connect](https://auth0.com/docs/protocols/oidc)
 * Apache HTTPD with [mod_auth_openidc](https://github.com/zmartzone/mod_auth_openidc) 
-* [Peregrine CMS](Header Authentication Handler Configuration)
+* [Peregrine CMS](https://www.peregrine-cms.com/content/sites/peregrine.html)
 * Header External Login Module (this project)
 
 ## Prerequisites
@@ -48,16 +47,17 @@ $ mvn clean install sling:install
     
 2. Create a configuration for the _Header Authentication Handler Configuration_ with the following values. The only value that should
    be changed is the _Shared Secret_. Set this to a value of your choosing. The shared secret value will be used later in the Apache
-   configuration (`com.peregrine.sling.auth.header.HeaderAuthenticationHandler`)
+   configuration.
 
    * Login Cookie (header.auth.login.cookie) = `mod_auth_openidc_session`
    * Remote User Header (header.auth.remote.user.header) = `REMOTE_USER`
    * Shared Secret (header.auth.shared.secret) = _mysecret_
-   * Username Whitelist Pattern (header.auth.username.whitelist) = `^[A-Za-z0-9+_.-]+@(.+)$`
+   * Username Whitelist Pattern (header.auth.username.whitelist) = `^[A-Za-z0-9|+_.-]+@(.+)$`
    * User Profile Header Whitelist Pattern = `^OIDC_CLAIM_(.+)$` 
    
    *NOTE:* With the exception of the _Shared Secret_, all values above should be used as defined to work correctly with 
-   `mod_auth_openidc`.
+   `mod_auth_openidc` and Auth0. Pay special attention to the _Username Whitelist Pattern_. Auth0 user names contain
+   a pipe (|) character. The default OSGi service does not include this character.
    
 3. Create a configuration for _Apache Jackrabbit Oak Default Sync Handler_.
    (`org.apache.jackrabbit.oak.spi.security.authentication.external.impl.DefaultSyncHandler`).
@@ -76,14 +76,35 @@ $ mvn clean install sling:install
    pairs as shown with `preferences/firstLogin` and dynamic mappings as shown with the `OIDC_CLAIM_*` properties. Any
    HTTP header that is allowed by the _User Profile Header Whitelist Pattern_ in step #2 can be mapped to the repository.
    
-###  Configure Google's OpenID Connect  
+###  Configure Auth0 OpenID Connect  
 
-Refer to Google's [OpenID Connect](https://developers.google.com/identity/protocols/oauth2/openid-connect) documentation
-and complete the following steps:
+Start by register for an account at [https://auth0.com](https://auth0.com). For the purpose of demonstration,
+we will assume that we are running Apache locally on port 80 and that Peregrine is running locally on port 8080. If
+you want to run this on your public-facing site, replace localhost with your domain name.
 
-1. Obtain OAuth 2.0 credentials
-2. Set a redirect URI
-3. Customize the user consent screen
+1. From the Auth0 dashboard, navigate to _Applications_ and create an application.
+
+2. Name your application anything you like and select _Regular Web Applications_ as the type.
+
+3. Select _Apache_ as the project type.
+
+4. Next, click on _Settings_.
+
+5. Enter the following values on the _Settings_ page:
+
+   * `Application Login URI` - _leave empty_
+   * `Allowed Callback URLs` - http://localhost/oidc/redirect_uri
+   * `Allowed Logout URLs` - http://localhost/system/sling/logout
+   * `Allowed Web Origins` - http://localhost
+   * `Allowed Origins (CORS)` - http://localhost
+   
+6. Click the _Save Changes_ button.
+
+7. Make a note of the following as you will need it during the Apache configuration:
+
+   * Domain
+   * Client ID
+   * Client Secret
 
 ### Apache Installation and Configuration
 
@@ -101,7 +122,7 @@ $ sudo apt update -q  && apt-get install -q -y \
 
 * `${APACHE_DOMAIN}` - Your domain name
 * `${APACHE_PROXY_URL}` - Absolute URL to your Peregrine instance (i.e. http://localhost:8080/)
-* `${OIDC_PROVIDER_METADATA_URL}` - = Open ID Connect metadata URL (i.e. for Google it should be https://accounts.google.com/.well-known/openid-configuration)
+* `${OIDC_PROVIDER_METADATA_URL}` - Open ID Connect metadata URL (i.e. for Auth0 it should be https://DomainListedInAuth0Settings/.well-known/openid-configuration)
 * `${OIDC_CLIENT_ID}` - Your Open ID Connect client ID 
 * `${OIDC_CLIENT_SECRET}` - Your Open ID Connect client secret
 * `${OIDC_CRYPTO_PASSPHRASE}` = Your Open ID Connect crypto pass phrase. You can set this to any value you wish. The header login module has nothing to do with this.

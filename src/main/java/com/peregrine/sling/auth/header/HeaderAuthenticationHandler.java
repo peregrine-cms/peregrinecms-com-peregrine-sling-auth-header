@@ -87,6 +87,7 @@ public class HeaderAuthenticationHandler extends DefaultAuthenticationFeedbackHa
             final String username = request.getHeader(remoteUserHeader);
             final String sharedSecret = request.getHeader(HEADER_AUTH_SHARED_SECRET_HEADER);
 
+            logger.trace("extractCredentials called");
             if (isValidSharedSecret(sharedSecret) && isValidUsername(username))
             {
                 logger.debug("Creating credentials and setting pre-authentication marker for user: '{}'", username);
@@ -96,7 +97,8 @@ public class HeaderAuthenticationHandler extends DefaultAuthenticationFeedbackHa
             }
             else
             {
-                logger.warn("Invalid shared secret or username for remote user: '{}'", username);
+                final String invalidCause = !isValidSharedSecret(sharedSecret) ? "secret" : "username";
+                logger.warn("Invalid {} for remote user: '{}'", invalidCause, username);
             }
         }
 
@@ -136,6 +138,7 @@ public class HeaderAuthenticationHandler extends DefaultAuthenticationFeedbackHa
     @Activate
     protected void activate(HeaderAuthenticationHandlerConfig config, ComponentContext componentContext)
     {
+        logger.debug("Activating Header Authentication Handler");
         this.loginCookie = config.header_auth_login_cookie();
         this.remoteUserHeader = config.header_auth_remote_user_header();
         this.sharedSecret = config.header_auth_shared_secret();

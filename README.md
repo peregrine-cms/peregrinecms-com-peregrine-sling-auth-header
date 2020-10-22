@@ -37,9 +37,11 @@ This module follows the "Pre-Authentication combined with Login Module Chain" ap
 
 ## Prerequisites
 
-* Java JDK 8
+* Java JDK 11
 * Apache Maven 3.5+
-* Apache Sling 9 with `oak-auth-external` bundle installed.
+* Apache Sling 12 with `oak-auth-external` bundle installed.
+
+**NOTE:** Ensure that you have `oak-auth-extern` version 1.32.0 or greater.
 
 ## Installation
 
